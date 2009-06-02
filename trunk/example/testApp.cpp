@@ -9,12 +9,18 @@ float py;
 float px2 ;
 float py2 ;
 
+float px3 = 400 ;
+float py3 = 400;
+
 float alpha;
 float rotZ;
 
 int duration ;
 int step = 0;
 int max_steps = 5;
+
+float pwidth = 200;
+float pheight = 200;
 
 //Multiple tween
 void createTween1() {
@@ -69,6 +75,18 @@ void createTween2() {
       step++;
     }
 }
+
+void createTween3(){
+     tween::TweenerParam param(4000, tween::ELASTIC);
+     param.addProperty(&pwidth, 600);
+     param.addProperty(&pheight, 600);
+     param.addProperty(&px3, 200);
+     param.addProperty(&py3, 200);
+     param.addProperty(&alpha, 127);
+     tweener.addTween(param);
+
+
+}
 //--------------------------------------------------------------
 void testApp::setup(){
     cout<<"Iniciado";
@@ -90,6 +108,7 @@ void testApp::onComplete(TweenerParam& param){
 
         if (step == max_steps) {
           tweener.removeListener(this);
+          createTween3();
         } else {
            createTween2() ;
         }
@@ -120,9 +139,9 @@ void testApp::draw(){
     ofEnableAlphaBlending();
 
      ofSetColor(0,0,0,alpha);
-     glTranslated(400,400,0);
+     glTranslated(px3,px3,0);
      glRotated(rotZ,0,0,1);
-     ofRect(-100,-100,200,200);
+     ofRect(-100,-100,pwidth,pheight);
 
     ofDisableAlphaBlending();
 
