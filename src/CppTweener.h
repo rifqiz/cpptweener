@@ -349,27 +349,27 @@ class TweenerParam  {
 
             }
 
-            void removeTween(TweenerParam  *param, std::list<TweenerParam>::iterator iter = NULL) {
+            void removeTween(TweenerParam  *param) {
 
-               if (iter != NULL) {
+              /* if (iter != NULL) {
                    (*iter).cleanProperties();
                     tweens.erase(iter);
                     std::cout<<"\n Tween Removido pelo iterator\n";
                     --total_tweens;
-               } else {
+               } else {*/
                  total_tweens = tweens.size();
                  tweensIT = tweens.begin();
                     for (int i=0; i <  total_tweens; i++,tweensIT++) {
                         if ((*param) == (*tweensIT)) {
                             (*tweensIT).cleanProperties();
                             tweens.erase(tweensIT);
-                            tweensIT = NULL;
+                            //tweensIT = NULL;
                             std::cout<<"\n Tween Removido\n";
                             --total_tweens;
                             break;
                         }
                     }
-               }
+               //}
             }
 
             void addListener(TweenerListener *listener) {
@@ -454,7 +454,7 @@ class TweenerParam  {
 
 
                              dispatchEvent(&(*tweensIT), ON_COMPLETE);
-                             removeTween(&(*tweensIT), tweensIT);
+                             removeTween(&(*tweensIT));
                              //tweens.erase(tweensIT);
                              tweensIT = tweens.begin();
                              //--total_tweens;
