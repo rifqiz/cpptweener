@@ -196,24 +196,28 @@ namespace tween {
 		int total_properties;
 		bool useMilliSeconds;
 		bool started;
+		bool delayFinished;
 
 		TweenerParam() {
 			useMilliSeconds = true;
 			timeCount = 0;
 			started = false;
-
+			delayFinished = true;
+            delay = 0;
 		}
 		~TweenerParam(){
 			properties.clear();
 
 		}
-		TweenerParam(float ptime,short ptransition = EXPO, short pequation = EASE_OUT) {
+		TweenerParam(float ptime,short ptransition = EXPO, short pequation = EASE_OUT, float pdelay = 0) {
 			time = ptime;
 			transition = ptransition;
 			equation = pequation;
 			useMilliSeconds = true;
 			timeCount = 0;
 			started = false;
+			delayFinished = (pdelay > 0)?false:true;
+			delay = pdelay;
 		}
 
 		void addProperty(float *valor, float valorFinal) {
@@ -275,43 +279,8 @@ namespace tween {
 		std::list<TweenerListener*>::iterator listenerIT;
 		int total_tweens ;
 
-		float runEquation(int transition,int equation, float t,float b , float c, float d) {
-
-			float result;
-			if (equation == EASE_IN) {
-				result = funcs[transition]->easeIn(t,b,c,d);
-			} else if (equation == EASE_OUT) {
-				result = funcs[transition]->easeOut(t,b,c,d);
-			} else if (equation == EASE_IN_OUT) {
-				result = funcs[transition]->easeInOut(t,b,c,d);
-			}
-
-			return result;
-		}
-
-		void dispatchEvent(TweenerParam *param, short eventType) {
-
-			for (unsigned int i = 0; i < listeners.size(); i++ ) {
-				listenerIT = listeners.begin();
-				TweenerListener *listener = *listenerIT;
-				switch(eventType) {
-					case ON_START:
-						listener->onStart(*param);
-						break;
-					case ON_STEP:
-						listener->onStep(*param);
-						break;
-					case ON_COMPLETE:
-						listener->onComplete(*param);
-						break;
-					default:
-						std::cout<<"Event not found!!";
-						break;
-				}
-
-
-			}
-		}
+		float runEquation(int transition,int equation, float t,float b , float c, float d);
+		void dispatchEvent(TweenerParam *param, short eventType);
 
 	public:
 		Tweener() {
@@ -326,128 +295,16 @@ namespace tween {
 			this->funcs[CIRC] =  &fCirc;
 			this->funcs[BOUNCE] =  &fBounce;
 			this->funcs[BACK] =  &fBack;
-
-
-
 		}
-
-
-
-
-		void addTween(TweenerParam& param) {
-			param.timeCount = 0;
-
-			for (int i =0 ; i < param.total_properties; i++ ) {
-				TweenerProperty prop = param.properties[i];
-				param.properties[i].initialValue = *(prop.ptrValue);
-
-			}
-			//std::cout<<" \nParam: props"<< (param).total_properties  << " time" << (param).time;
-
-			tweens.push_back(param);
-			total_tweens = tweens.size();
-
-		}
-
-		void removeTween(TweenerParam  *param) {
-
-			total_tweens = tweens.size();
-			tweensIT = tweens.begin();
-			for (int i=0; i <  total_tweens; i++,tweensIT++) {
-				if ((*param) == (*tweensIT)) {
-					(*tweensIT).cleanProperties();
-					tweens.erase(tweensIT);
-					std::cout<<"\n-Tween Removed";
-					--total_tweens;
-					break;
-				}
-			}
-
-		}
-
-		void addListener(TweenerListener *listener) {
-			listeners.push_back(listener);
-		}
-
-
-		void removeListener(TweenerListener *listener) {
-			for (listenerIT = listeners.begin(); listenerIT != listeners.end(); ++listenerIT ) {
-			  if (listener == (*listenerIT) ) {
-					std::cout<< "\n-Listener removed";
-					listeners.erase(listenerIT);
-					listenerIT = listeners.begin();
-					break;
-				}
-			}
-		}
-		void setFunction(short funcEnum) {
-			if (funcEnum > -1 && funcEnum <=11) {
-				currentFunction = funcEnum;
-			}
-		};
-
-		void step(long currentMillis) {
-
-			total_tweens = tweens.size();
-			int t = 0 ;
-			int d = 0;
-			int  dif = (currentMillis - lastTime);
-
-			for (tweensIT = tweens.begin(); tweensIT != tweens.end(); ++tweensIT ) {
-
-				if (!(*tweensIT).started) {
-					dispatchEvent(&(*tweensIT), ON_START);
-					(*tweensIT).started = true;
-				}
-
-				dispatchEvent(&(*tweensIT), ON_STEP);
-
-				if ((*tweensIT).useMilliSeconds == true) {
-					((*tweensIT).timeCount)+=dif;
-					t = (*tweensIT).timeCount;
-				} else {
-					((*tweensIT).timeCount)++;
-					t =(*tweensIT).timeCount;
-				}
-
-				d = (*tweensIT).time ;
-				if ( t < d  && (*tweensIT).total_properties > 0 ) {
-					if ((*tweensIT).timeCount < (*tweensIT).time) {
-						for (unsigned int i =0 ; i < (*tweensIT).total_properties; i++ ) {
-							TweenerProperty prop = (*tweensIT).properties[i];
-							if (prop.ptrValue != NULL ) {
-
-								float  res   = runEquation(
-														   (*tweensIT).transition,
-														   (*tweensIT).equation,
-														   t,
-														   prop.initialValue,
-														   (prop.finalValue - prop.initialValue ),
-														   d);
-
-								*(prop.ptrValue) = res;
-							}
-						}
-					}
-
-
-
-				} else {
-					dispatchEvent(&(*tweensIT), ON_COMPLETE);
-					removeTween(&(*tweensIT));
-					tweensIT = tweens.begin();
-
-				}
-			}
-			lastTime = currentMillis;
-
-		};
+		void addTween(TweenerParam& param);
+		void removeTween(TweenerParam  *param);
+		void addListener(TweenerListener *listener) ;
+		void removeListener(TweenerListener *listener) ;
+		void setFunction(short funcEnum);
+		void step(long currentMillis) ;
 
 
     };
-
-
-
 
 }
 
