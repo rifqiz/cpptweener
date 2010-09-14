@@ -1,5 +1,8 @@
 /*****************
 
+ Wesley Ferreira Marques - wesley.marques@gmail.com 
+ http://codevein.com
+ 
  This port was based in a inital code from Jesus Gollonet, him port Penners easing equations to C/C++:
 
  http://www.jesusgollonet.com/blog/2007/09/24/penner-easing-cpp/
@@ -9,8 +12,7 @@
  (http://code.google.com/p/tweener/)
 
 
- wesley.marques@gmail.com  - Wesley Ferreira Marques
- http://codevein.com
+
 
 
  **********************/
@@ -259,11 +261,13 @@ namespace tween {
             if (param.delay > 0){
               param.delayFinished = false;
             }
-			for (int i =0 ; i < param.total_properties; i++ ) {
-				TweenerProperty prop = param.properties[i];
-				param.properties[i].initialValue = *(prop.ptrValue);
+            if (param.total_properties > 0) {
+                for (int i =0 ; i < param.total_properties; i++ ) {
+                    TweenerProperty prop = param.properties[i];
+                    param.properties[i].initialValue = *(prop.ptrValue);
 
-			}
+                }
+            }
 			//std::cout<<" \nParam: props"<< (param).total_properties  << " time" << (param).time;
 
 			tweens.push_back(param);
@@ -279,13 +283,17 @@ namespace tween {
 				if ((*param) == (*tweensIT)) {
 					(*tweensIT).cleanProperties();
 					tweens.erase(tweensIT);
-					std::cout<<"\n-Tween Removed";
+					//std::cout<<"\n-Tween Removed";
 					--total_tweens;
 					break;
 				}
 			}
 
 		}
+	
+	
+		
+	
 
 		void Tweener::addListener(TweenerListener *listener) {
 			listeners.push_back(listener);
@@ -315,14 +323,18 @@ namespace tween {
 			int d = 0;
 			int  dif = (currentMillis - lastTime);
 
-			for (tweensIT = tweens.begin(); tweensIT != tweens.end(); ++tweensIT ) {
+			for (tweensIT = tweens.begin();  tweensIT != tweens.end(); ++tweensIT ) {
 
 				if (!(*tweensIT).started) {
 					dispatchEvent(&(*tweensIT), ON_START);
 					(*tweensIT).started = true;
+				
 				}
 
 				dispatchEvent(&(*tweensIT), ON_STEP);
+				if ((*tweensIT).onStepCallBack){
+					(*tweensIT).onStepCallBack();					
+				}	
 
 				if ((*tweensIT).useMilliSeconds == true) {
 					((*tweensIT).timeCount)+=dif;
@@ -355,9 +367,25 @@ namespace tween {
                         }
 
                     } else {
-                        dispatchEvent(&(*tweensIT), ON_COMPLETE);
-                        removeTween(&(*tweensIT));
-                        tweensIT = tweens.begin();
+						if ((*tweensIT).decreaseRepeat() < 0 ) {
+							//garante o valor final
+							/*for (unsigned int i =0 ; i < (*tweensIT).total_properties; i++ ) {
+                                TweenerProperty prop = (*tweensIT).properties[i];
+                                if (prop.ptrValue != NULL ) {
+									*(prop.ptrValue) = prop.finalValue;
+								}
+                            }*/
+							dispatchEvent(&(*tweensIT), ON_COMPLETE);							
+							if ((*tweensIT).onCompleteCallBack){
+								(*tweensIT).onCompleteCallBack();
+								(*tweensIT).onCompleteCallBack = 0;
+								(*tweensIT).onStepCallBack = 0;
+							}	
+							removeTween(&(*tweensIT));
+							tweensIT = tweens.begin();
+						} 
+	
+                        
 
                     }
 				} else  if ((!(*tweensIT).delayFinished) && ((*tweensIT).timeCount > (*tweensIT).delay)) {
