@@ -317,7 +317,10 @@ namespace tween {
 		};
 
 		void Tweener::step(long currentMillis) {
-
+			//fix thanks for Etienne Mouchel
+			if(lastTime == 0)
+				lastTime = currentMillis;
+			
 			total_tweens = tweens.size();
 			int t = 0 ;
 			int d = 0;
@@ -383,6 +386,8 @@ namespace tween {
 							}	
 							removeTween(&(*tweensIT));
 							tweensIT = tweens.begin();
+							if(total_tweens == 0) //if the tweener is empty again this way for the next param adding the dif won't be huge and it won't skip the tweening
+								lastTime = 0;
 						} 
 	
                         
@@ -392,8 +397,10 @@ namespace tween {
                      (*tweensIT).delayFinished = true;
                      (*tweensIT).timeCount = 0;
                 }
+
 			}
-			lastTime = currentMillis;
+			if(lastTime != 0)
+				lastTime = currentMillis;
 
 		};
 
