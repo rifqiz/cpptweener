@@ -363,6 +363,7 @@ namespace tween {
 			this->funcs[CIRC] =  &fCirc;
 			this->funcs[BOUNCE] =  &fBounce;
 			this->funcs[BACK] =  &fBack;
+			lastTime = 0;
 		}
 		void addTween(TweenerParam& param);
 		void removeTween(TweenerParam  *param);
